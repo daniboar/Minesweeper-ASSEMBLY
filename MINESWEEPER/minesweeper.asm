@@ -46,12 +46,12 @@ symbol_height EQU 20
 include digits.inc
 include letters.inc
 
-button_x EQU 110
+button_x EQU 110 ; unde incepe chenarul
 button_y EQU 40
-button_size EQU 400
-patrat_size EQU 45
+button_size EQU 400 
+patrat_size EQU 45 ; marimea unui patratel
 scor DD 11
-total EQU 54
+total EQU 54  ;totalul de patratele verzi
 
 .code
 ; procedura make_text afiseaza o litera sau o cifra la coordonatele date
@@ -72,6 +72,7 @@ make_text proc
 	sub eax, 'A'
 	lea esi, letters
 	jmp draw_text
+	
 make_digit:
 	cmp eax, '0'
 	jl make_space
@@ -80,6 +81,7 @@ make_digit:
 	sub eax, '0'
 	lea esi, digits
 	jmp draw_text
+	
 make_space:	
 	mov eax, 26 ; de la 0 pana la 25 sunt litere, 26 e space
 	lea esi, letters
@@ -91,6 +93,7 @@ draw_text:
 	mul ebx
 	add esi, eax
 	mov ecx, symbol_height
+	
 bucla_simbol_linii:
 	mov edi, [ebp+arg2] ; pointer la matricea de pixeli
 	mov eax, [ebp+arg4] ; pointer la coord y
@@ -108,8 +111,10 @@ bucla_simbol_coloane:
 	je simbol_pixel_alb
 	mov dword ptr [edi], 0
 	jmp simbol_pixel_next
+	
 simbol_pixel_alb:
 	mov dword ptr [edi], 0FFFFFFh
+	
 simbol_pixel_next:
 	inc esi
 	add edi, 4
@@ -211,28 +216,13 @@ draw proc
 	call memset
 	add esp, 12
 	jmp afisare_litere
-	
-;mai jos e codul care intializeaza fereastra cu pixeli albi
-	
+		
 evt_click:
-	mov eax, [ebp+arg2]
-	cmp eax, button_x
-	jl button_fail
-	cmp eax, button_x + button_size
-	jg button_fail
-	mov eax, [ebp+arg3]
-	cmp eax, button_y
-	jl button_fail
-	cmp eax, button_y + button_size
-	jg button_fail
-	
 	push ebp
 	mov ebx,[ebp+arg2] ; x'ul click-ului
 	mov edx,[ebp+arg3] ;y'ul click-ului
 	push edx
 	push ebx
-	
-	
 	
 	make_text_macro 'G', area, button_x + button_size/2 - 50, button_y + button_size + 10
 	make_text_macro 'O', area, button_x + button_size/2 - 40, button_y + button_size + 10
@@ -244,16 +234,14 @@ evt_click:
 	make_text_macro 'C', area, button_x + button_size/2 + 20, button_y + button_size + 10
 	make_text_macro 'K', area, button_x + button_size/2 + 30, button_y + button_size + 10
 
-	
-	
 	verificare_bombe_patrat1:
-	cmp ebx, 110 ; daca x-ul patratului e mai mic decat 110 atunci am dat click in afara chenarului
+	cmp ebx, 110 ; daca x-ul click-ului e mai mic decat 110 atunci am dat click in afara chenarului (stanga)
 	jl wrong
-	cmp ebx, 160 ; daca x-ul patratului e mai mare decat 160 atunci verificam patratul 2
+	cmp ebx, 160 ; daca x-ul click-ului e mai mare decat 160 atunci verificam patratul 2 (dreapta)
 	jg verificare_bombe_patrat2
-	cmp edx, 40 
+	cmp edx, 40  ; daca y-ul click-ului e mai mic decat 40 atunci am dat click in afara chenarului (sus)
 	jl wrong
-	cmp edx, 90
+	cmp edx, 90  ; daca y-ul click-ului e mai mare decat 90 atunci verificam patratul 9 (jos)
 	jg verificare_bombe_patrat9 
 	drawpatrat button_x + 50  , button_y + 350, 50, 50, 0FF0000h
 	make_text_macro 'Y', area, button_x + 70, button_y + 365
@@ -276,6 +264,7 @@ evt_click:
 	drawpatrat button_x, button_y, 50, 50, 0FF0000h
 	make_text_macro 'Y', area, button_x + 20, button_y + 15
 	
+	; verificam celelate patratele 
 	
 	verificare_bombe_patrat2:
 	cmp ebx, 170 
@@ -1363,16 +1352,14 @@ evt_click:
 	make_text_macro '1', area, button_x + 320, button_y + 365
 	make_text_macro '1', area, button_x + 370, button_y + 315
 	jmp afisare_litere
-	
-	
-	
-	
-	mov counterOK, 0
-	jmp afisare_litere
+		
+	; mov counterOK, 0
+	; jmp afisare_litere
 	
 	;mai jos e codul care intializeaza fereastra cu pixeli albi	
 wrong:
 ; nu s-a dat click in interiorul chenarului
+
 button_fail:
 	make_text_macro 'G', area, button_x + button_size/2 - 50, button_y + button_size + 10
 	make_text_macro 'A', area, button_x + button_size/2 - 40, button_y + button_size + 10
@@ -1383,7 +1370,7 @@ button_fail:
 	make_text_macro 'V', area, button_x + button_size/2 + 10, button_y + button_size + 10
 	make_text_macro 'E', area, button_x + button_size/2 + 20, button_y + button_size + 10
 	make_text_macro 'R', area, button_x + button_size/2 + 30, button_y + button_size + 10
-	;drawpatrat button_x, button_y, button_size, button_size, 0FF0000h
+	
 	jmp afisare_litere
 	
 clear:
@@ -1451,6 +1438,7 @@ afisare_litere:
 	add edx, '0'
 	make_text_macro edx, area, 190, 0
 	
+	;afisam patratelele de ajutor de la inceputul jocului
 	drawpatrat button_x+200, button_y, 50, 50, 000FF00h
 	make_text_macro '1', area, button_x +220, button_y + 15
 	drawpatrat button_x+250, button_y, 50, 50, 000FF00h
@@ -1480,6 +1468,7 @@ afisare_litere:
 	make_text_macro 'P', area, 340, 0
 	make_text_macro 'E', area, 350, 0
 	make_text_macro 'R', area, 360, 0
+	
 	make_text_macro 'Z', area, 240, 0 ; smiley face
 	make_text_macro 'Y', area, 380, 0 ; sad face
 	
@@ -1519,9 +1508,9 @@ afisare_litere:
 	linie_vertical button_x+350, button_y, button_size, 0
 	linie_vertical button_x+400, button_y, button_size, 0
 	
-	mov esi, scor
-	cmp esi, total
-	jne iesi
+	mov esi, scor  
+	cmp esi, total ; comparam daca am dat click pe toate patratelele fara bombe
+	jne iesi   ; daca scor != total atunci am dat click pe o bomba si am pierdut
 	
 	make_text_macro 'A', area, 555, 200
 	make_text_macro 'I', area, 565, 200
